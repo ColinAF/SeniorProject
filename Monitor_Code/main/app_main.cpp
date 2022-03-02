@@ -29,6 +29,8 @@ static void gpio_task_example(void* arg)
     for(;;) {
         if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
             printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level(io_num));
+
+
         }
     }
 }
@@ -37,7 +39,6 @@ void init_gpio( void )
 {
     
     ESP_LOGI("GPIO", "Init GPIO");
-
 
     //zero-initialize the config structure.
     gpio_config_t io_conf = {};
@@ -71,12 +72,10 @@ void init_gpio( void )
 
 extern "C" void app_main()
 {
-    init_gpio(); 
-
-    /*
     app_wifi_main();
-    app_mdns_main();
-
+    //app_mdns_main();
+    init_gpio();
+    /*
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
     xQueueHttpFrame = xQueueCreate(2, sizeof(camera_fb_t *));
 

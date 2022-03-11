@@ -1,6 +1,7 @@
 # A template for a simple server to recv images from esp 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
+import os
 
 class S(BaseHTTPRequestHandler):
     def _set_response(self):
@@ -14,9 +15,17 @@ class S(BaseHTTPRequestHandler):
         self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
 
     def do_POST(self):
+
+        # Temporary fix to remove file 
+        # Will add in a more suitable naming scheme later when I collect data 
+        if os.path.exists("tst.jpg"):
+            os.remove("tst.jpg")
+        else:
+         print("The file does not exist") 
+
         content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
         post_data = self.rfile.read(content_length) # <--- Gets the data itself
-        #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n", str(self.path), str(self.headers), post_data.decode('utf-8'))
+        logging.info("POST request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
 
         self._set_response()
         self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
@@ -35,4 +44,4 @@ def run(server_class=HTTPServer, handler_class=S, port=80):
     httpd.server_close()
     logging.info('Stopping httpd...\n')
 
-run()
+run() 

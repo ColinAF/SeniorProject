@@ -4,7 +4,7 @@
 #include "esp_log.h"
 #include "esp_system.h"
 
-static const char *TAG = "who_camera";
+static const char *TAG = "CAMERA";
 static QueueHandle_t xQueueFrameO = NULL;
 
 static void task_process_handler(void *arg)

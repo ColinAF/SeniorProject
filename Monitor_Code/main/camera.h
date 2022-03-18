@@ -1,5 +1,8 @@
 // Modified from "who_camera.h"
 
+#ifndef CAMERA_H
+#define CAMERA_H
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
@@ -78,3 +81,5 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif 
+
+#endif

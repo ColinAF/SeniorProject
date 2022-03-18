@@ -2,6 +2,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import os
+import socket
 
 class S(BaseHTTPRequestHandler):
     def _set_response(self):
@@ -37,6 +38,13 @@ def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     logging.info('Starting httpd...\n')
+
+    # Just a little info to make my life easier 
+    host = socket.gethostname()
+    ip = socket.gethostbyname(host)
+    print('Host: ', host)
+    print('IP: ', ip)
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

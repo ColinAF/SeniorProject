@@ -4,9 +4,14 @@
  * - Allow VS code compilation (Works Sorta)
  * - Remove redundant header files (Removed Some)
  * - Add include guards (Done)
+ * - Fix include errors (Mostly Fixed) : still have that weird esp-who issue
+ * - Fix Bad CMake executable error 
+ * - Look into precompiled headers?
  * - Remove redundant code 
  * - Doxygen Docs 
  * - Fix "failed to get frame bug"
+ * - Replace example connect wifi stuff
+ * 
 */
 
 //#include "who_motion_detection.hpp"

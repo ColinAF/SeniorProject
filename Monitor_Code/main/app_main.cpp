@@ -6,7 +6,6 @@
  * - Add include guards (Done)
  * - Fix include errors (Mostly Fixed) : still have that weird esp-who issue
  * - Fix Bad CMake executable error 
- * - Look into precompiled headers?
  * - Remove redundant code 
  * - Doxygen Docs 
  * - Fix "failed to get frame bug"
@@ -15,6 +14,8 @@
 */
 
 //#include "who_motion_detection.hpp"
+
+
 
 #include <string.h>
 #include "freertos/FreeRTOS.h"
@@ -33,6 +34,8 @@
 
 #include "esp_log.h"
 
+#include "button.h"
+
 // Compile the project in data collection mode (I could probably make this change more things to shorten compile time)
 #define DATA_COLLECTION_MODE 
 
@@ -43,7 +46,7 @@ extern "C" void app_main()
 
     #ifdef DATA_COLLECTION_MODE
 
-        //init_gpio();
+        init_gpio();
         
         // Wifi should probably go in post? 
         ESP_ERROR_CHECK(nvs_flash_init());

@@ -4,8 +4,6 @@
 #define CAMERA_H
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
 #include "freertos/semphr.h"
 
 #include "esp_camera.h"
@@ -73,10 +71,10 @@ extern "C"
      *                     - FRAMESIZE_QSXGA,    // 2560x1920
      * @param fb_count     Number of frame buffers to be allocated. If more than one, then each frame will be acquired (double speed)
      */
-    void register_camera(const pixformat_t pixel_fromat,
+    void init_camera(const pixformat_t pixel_fromat,
                          const framesize_t frame_size,
-                         const uint8_t fb_count,
-                         const QueueHandle_t frame_o);
+                         const uint8_t fb_count);
+
 
 #ifdef __cplusplus
 }

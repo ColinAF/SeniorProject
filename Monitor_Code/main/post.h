@@ -10,13 +10,15 @@ extern "C"
 #include "esp_err.h"
 #include "esp_http_client.h"
 
+
+#include "freertos/semphr.h"
+
 // Semaphore to block acess to curFrame
 extern SemaphoreHandle_t xFrameSemaphore;
 
-extern camera_fb_t *curFrame; // Frame buffer 
+// Frame buffer 
+extern camera_fb_t *curFrame; 
 
-// This most likely wont be needed in the final version of the code!
-static QueueHandle_t xQueueAIFrame = NULL;
 
 esp_err_t _http_event_handle(esp_http_client_event_t *evt);
 void http_post_task(void *pvParameters);

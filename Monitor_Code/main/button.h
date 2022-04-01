@@ -9,7 +9,7 @@ extern "C"
 
 #include "freertos/FreeRTOS.h"
 
-void init_gpio( void );
+void init_button();
 
 static void gpio_task_example(void* arg);
 

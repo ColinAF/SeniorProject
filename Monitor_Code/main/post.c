@@ -6,8 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-// This might be better in post.h 
-#include "freertos/semphr.h"
+
 
 #include "esp_log.h"
 
@@ -54,13 +53,6 @@ void http_post_task(void *pvParameters)
 {
 
 
-    //xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
-    register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
-    //xQueueReceive(xQueueAIFrame, &(curFrame), portMAX_DELAY);
-
-    //curFrame = esp_camera_fb_get();
-
-    ESP_LOGI(TAG, "Cam registered!");
     
 
     while(1)

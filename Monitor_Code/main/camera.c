@@ -5,24 +5,10 @@
 #include "esp_system.h"
 
 static const char *TAG = "CAMERA";
-static QueueHandle_t xQueueFrameO = NULL;
 
-/*
-static void task_process_handler(void *arg)
-{
-    while (true)
-    {
-        camera_fb_t *frame = esp_camera_fb_get();
-        if (frame)
-            xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
-    }
-}
-*/
-
-void register_camera(const pixformat_t pixel_fromat,
+void init_camera(const pixformat_t pixel_fromat,
                      const framesize_t frame_size,
-                     const uint8_t fb_count,
-                     const QueueHandle_t frame_o)
+                     const uint8_t fb_count)
 {
     ESP_LOGI(TAG, "Camera module is %s", CAMERA_MODULE_NAME);
 
@@ -85,6 +71,5 @@ void register_camera(const pixformat_t pixel_fromat,
         s->set_saturation(s, -2); //lower the saturation
     }
 
-    //xQueueFrameO = frame_o;
-    //xTaskCreatePinnedToCore(task_process_handler, TAG, 2 * 1024, NULL, 5, NULL, 1);
+
 }

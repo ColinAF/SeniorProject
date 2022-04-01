@@ -21,11 +21,9 @@ static const char* TAG = "BUTTON";
 
 static QueueHandle_t gpio_evt_queue = NULL;
 
-void init_gpio( void )
+void init_button( void )
 {
     
-    ESP_LOGI("GPIO", "Init GPIO");
-
     //zero-initialize the config structure.
     gpio_config_t io_conf = {};
     //disable interrupt
@@ -48,7 +46,7 @@ void init_gpio( void )
     xTaskCreate(gpio_task_example, "gpio_task_example", 2048, NULL, 10, NULL);
 
     //install gpio isr service
-    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+    //gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
 
     //hook isr handler for specific gpio pin
     gpio_isr_handler_add(GPIO_INPUT_IO_0, gpio_isr_handler, (void*) GPIO_INPUT_IO_0);
@@ -100,7 +98,6 @@ static void gpio_task_example(void* arg)
                 ESP_LOGI(TAG, "Lenght: %d", curFrame->len);
                 ESP_LOGI(TAG, "Width: %d", curFrame->width);
                 ESP_LOGI(TAG, "Height: %d", curFrame->height);
-
 
                 esp_camera_fb_return(curFrame);
 

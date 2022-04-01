@@ -12,7 +12,6 @@
  * - Replace example connect wifi stuff
  * - Rework camera code with lower level functions 
  * - Get rid of example connect and use proper wifi station code 
- * - Put curFrame in a semaphore
  * - Add button loop!  
  * - Make Wifi config more friendly! 
 */
@@ -49,8 +48,12 @@ extern "C" void app_main()
 
     #ifdef DATA_COLLECTION_MODE
 
-        init_gpio();
-        
+        init_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2);
+        ESP_LOGI(TAG, "Init Cam");
+
+        init_button(); 
+        ESP_LOGI(TAG, "Init Button");
+
         // Wifi should probably go in post? 
         ESP_ERROR_CHECK(nvs_flash_init());
         ESP_ERROR_CHECK(esp_netif_init());
@@ -70,7 +73,6 @@ extern "C" void app_main()
     /*
         xQueueHttpFrame = xQueueCreate(2, sizeof(camera_fb_t *));
         register_motion_detection(xQueueAIFrame, NULL, NULL, xQueueHttpFrame);
-        register_httpd(xQueueHttpFrame, NULL, true);  
     */
 
 }

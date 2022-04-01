@@ -8,14 +8,16 @@
  * - Fix Bad CMake executable error 
  * - Remove redundant code 
  * - Doxygen Docs 
- * - Fix "failed to get frame bug"
+ * - Fix "failed to get frame bug" (Not a bug!!)
  * - Replace example connect wifi stuff
- * 
+ * - Rework camera code with lower level functions 
+ * - Get rid of example connect and use proper wifi station code 
+ * - Put curFrame in a semaphore
+ * - Add button loop!  
+ * - Make Wifi config more friendly! 
 */
 
 //#include "who_motion_detection.hpp"
-
-
 
 #include <string.h>
 #include "freertos/FreeRTOS.h"
@@ -35,6 +37,7 @@
 #include "esp_log.h"
 
 #include "button.h"
+#include "post.h"
 
 // Compile the project in data collection mode (I could probably make this change more things to shorten compile time)
 #define DATA_COLLECTION_MODE 
@@ -60,7 +63,7 @@ extern "C" void app_main()
         */
         ESP_ERROR_CHECK(example_connect());
 
-        //xTaskCreatePinnedToCore(&http_post_task, "http_post_task", 4096, NULL, 5, NULL, 1);
+        xTaskCreatePinnedToCore(&http_post_task, "http_post_task", 4096, NULL, 5, NULL, 1);
         
     #endif
     

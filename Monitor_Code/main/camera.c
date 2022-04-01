@@ -7,6 +7,7 @@
 static const char *TAG = "CAMERA";
 static QueueHandle_t xQueueFrameO = NULL;
 
+/*
 static void task_process_handler(void *arg)
 {
     while (true)
@@ -16,6 +17,7 @@ static void task_process_handler(void *arg)
             xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
     }
 }
+*/
 
 void register_camera(const pixformat_t pixel_fromat,
                      const framesize_t frame_size,
@@ -83,6 +85,6 @@ void register_camera(const pixformat_t pixel_fromat,
         s->set_saturation(s, -2); //lower the saturation
     }
 
-    xQueueFrameO = frame_o;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 2 * 1024, NULL, 5, NULL, 1);
+    //xQueueFrameO = frame_o;
+    //xTaskCreatePinnedToCore(task_process_handler, TAG, 2 * 1024, NULL, 5, NULL, 1);
 }

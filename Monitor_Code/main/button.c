@@ -14,7 +14,7 @@
 #include "freertos/semphr.h"
 
 #define GPIO_INPUT_IO_0 GPIO_NUM_15
-#define GPIO_INPUT_PIN_SEL  (1ULL<<GPIO_INPUT_IO_0)
+#define GPIO_INPUT_PIN_SEL  (1ULL << GPIO_INPUT_IO_0)
 #define ESP_INTR_FLAG_DEFAULT 0
 
 static const char* TAG = "BUTTON";
@@ -89,6 +89,11 @@ static void gpio_task_example(void* arg)
         if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
             
             printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level(io_num));
+
+            // Somewhat of an oversight... 
+            // Should have used UART instead of a button 
+            // This is delay is so that the tripod stops wobbeling 
+            vTaskDelay(  1000 / portTICK_PERIOD_MS );
 
             // Loop until we actually get the frame most likely!!!
             curFrame = esp_camera_fb_get();

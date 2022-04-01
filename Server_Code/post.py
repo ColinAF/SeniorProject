@@ -1,9 +1,9 @@
 
 import requests
 
-f = open("assets/Apple02.jpg", "rb")
+f = open("../assets/Apple02.jpg", "rb")
 
-url = 'http://localhost:80'
+url = 'http://10.0.0.118:80'
 myobj = {'somekey': f}
 
 x = requests.post(url, data = f)

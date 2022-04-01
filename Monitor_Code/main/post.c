@@ -5,17 +5,17 @@
 #include "img_converters.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
-
-
 #include "esp_log.h"
 
 static const char* TAG = "HTTP Client";
 
+SemaphoreHandle_t xFrameSemaphore = NULL;
+camera_fb_t *curFrame = NULL;
 
 esp_err_t _http_event_handle(esp_http_client_event_t *evt)
 {
-    switch(evt->event_id) {
+    switch(evt->event_id) 
+    {
         case HTTP_EVENT_ERROR:
             ESP_LOGI(TAG, "HTTP_EVENT_ERROR");
             break;
@@ -31,7 +31,8 @@ esp_err_t _http_event_handle(esp_http_client_event_t *evt)
             break;
         case HTTP_EVENT_ON_DATA:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            if (!esp_http_client_is_chunked_response(evt->client)) {
+            if (!esp_http_client_is_chunked_response(evt->client)) 
+            {
                 printf("%.*s", evt->data_len, (char*)evt->data);
             }
 
@@ -43,17 +44,13 @@ esp_err_t _http_event_handle(esp_http_client_event_t *evt)
             ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
             break;
     }
+
     return ESP_OK;
 }
 
-SemaphoreHandle_t xFrameSemaphore = NULL;
-camera_fb_t *curFrame = NULL;
-
+// Make the jpg send in chunks instead of all at once? 
 void http_post_task(void *pvParameters)
 {
-
-
-    
 
     while(1)
     {   
@@ -61,19 +58,9 @@ void http_post_task(void *pvParameters)
         size_t bufLen; 
         uint8_t* jpegBuf; 
 
-        //if(xQueueReceive(xQueueAIFrame, &(curFrame), portMAX_DELAY))
-        //if(curFrame != NULL)
         if( xSemaphoreTake(xFrameSemaphore, 1000 / portTICK_PERIOD_MS ) == pdTRUE )
         {  
-
-            /* Redundant
-            ESP_LOGI(TAG, "Got fb!");
-            ESP_LOGI(TAG, "Lenght: %d", curFrame->len);
-            ESP_LOGI(TAG, "Width: %d", curFrame->width);
-            ESP_LOGI(TAG, "Height: %d", curFrame->height);
-            */
-
-             // Might cause issues later... populate these vars
+            // Maybe I should put this in button? 
             frame2jpg(curFrame, 80, &jpegBuf, &bufLen);
 
             // I had this url wrong the whole time I think :( improve the way this is set!! 
@@ -101,45 +88,10 @@ void http_post_task(void *pvParameters)
             }
 
             esp_http_client_cleanup(client);
-            
-            /*
-            for(int countdown = 10; countdown >= 0; countdown--) {
-                ESP_LOGI(TAG, "%d... ", countdown);
-                vTaskDelay(1000 / portTICK_PERIOD_MS);
-            }
-            */
-
-            // Reset the frame buffer 
-            //curFrame = NULL; 
-
+        
             ESP_LOGI(TAG, "Starting again!");
 
-            /*
-            // Unblock the curFrame resource
-            if( xSemaphoreGive(xFrameSemaphore) != pdTRUE )
-            {
-                ESP_LOGE(TAG, "Semaphore Give Error!");
-
-            }
-            */
-
-
        } 
-       /*
-       else // Failsafe 
-       {
-            ESP_LOGI(TAG, "Waiting for Button Press");
-            vTaskDelay(10000 / portTICK_PERIOD_MS);
-
-            // Unblock the curFrame resource
-            if( xSemaphoreGive(xFrameSemaphore) != pdTRUE )
-            {
-                ESP_LOGE(TAG, "Semaphore Give Error!");
-
-            }  
-       } 
-       */
-
 
     }
 

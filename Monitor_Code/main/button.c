@@ -23,7 +23,6 @@ static QueueHandle_t gpio_evt_queue = NULL;
 
 void init_button( void )
 {
-    
     //zero-initialize the config structure.
     gpio_config_t io_conf = {};
     //disable interrupt
@@ -68,14 +67,15 @@ void init_button( void )
     }
     // Create a semaphore to make operations to curFrame atomic
 
-
     return; 
 }
 
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
-    
     uint32_t gpio_num = (uint32_t) arg;
+
+    // Disable interrupts to help with debounce 
+    gpio_intr_disable(gpio_num); 
     xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);
 
 }
@@ -93,7 +93,7 @@ static void gpio_task_example(void* arg)
             // Somewhat of an oversight... 
             // Should have used UART instead of a button 
             // This is delay is so that the tripod stops wobbeling 
-            vTaskDelay(  1000 / portTICK_PERIOD_MS );
+            vTaskDelay(  5000 / portTICK_PERIOD_MS );
 
             // Loop until we actually get the frame most likely!!!
             curFrame = esp_camera_fb_get();
@@ -114,6 +114,9 @@ static void gpio_task_example(void* arg)
                 }
             }   
             // Loop until we actually get the frame most likely!!!    
+
+            // Re-enable after we've handled the interrupt
+            gpio_intr_enable(io_num);
                  
         }
     }

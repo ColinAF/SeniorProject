@@ -52,7 +52,7 @@ extern "C" void app_main()
 
     #ifdef DATA_COLLECTION_MODE
 
-        init_camera(PIXFORMAT_RGB565, FRAMESIZE_SVGA, 2);
+        init_camera(PIXFORMAT_RGB565, FRAMESIZE_VGA, 2);
         ESP_LOGI(TAG, "Init Cam");
 
         /* Stuff for proper wifi station

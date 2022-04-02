@@ -5,7 +5,7 @@ import os
 import socket
 
 DATASET_NAME = "fruit_test"
-DATASETS_PATH = "../assets/" + DATASET_NAME + "/images/"
+DATASETS_PATH = "assets/" + DATASET_NAME + "/images/" # When opening from the main project directory
 
 FILL_SIZE = 3 # Zero Padding for filenames 
 FILE_EXTENSION_LEN = len(".jpg")
@@ -39,7 +39,7 @@ class S(BaseHTTPRequestHandler):
         S.total_images += 1
         S.update_Class(class_name)
 
-        class_name += str(S.total_images).zfill(FILL_SIZE) + ".jpg"
+        class_name += str(S.image_classes.get(class_name)).zfill(FILL_SIZE) + ".jpg"
 
         f = open(DATASETS_PATH + class_name, "xb")
         f.write(post_data)

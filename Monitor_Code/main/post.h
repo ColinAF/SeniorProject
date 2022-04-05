@@ -6,18 +6,14 @@ extern "C"
 {
 #endif 
 
-#include "camera.h"
+#include "button.h"
+#include "camera.h" // probably won't need this any longer 
 #include "esp_err.h"
 #include "esp_http_client.h"
 
 
-#include "freertos/semphr.h"
-
-// Semaphore to block acess to curFrame
+// Semaphore to block acess to the jpg 
 extern SemaphoreHandle_t xFrameSemaphore;
-
-// Frame buffer 
-extern camera_fb_t *curFrame; 
 
 
 esp_err_t _http_event_handle(esp_http_client_event_t *evt);

@@ -1,8 +1,7 @@
 // Button code.. Update this text later plz...
 
 #include "button.h"
-#include "camera.h"
-#include "post.h"
+
 
 #include "driver/gpio.h"
 #include "esp_log.h"
@@ -19,7 +18,11 @@
 
 static const char* TAG = "BUTTON";
 
+camera_fb_t *curFrame = NULL;
 static QueueHandle_t gpio_evt_queue = NULL;
+SemaphoreHandle_t xFrameSemaphore = NULL;
+size_t bufLen = 0; 
+uint8_t* jpgBuf = NULL; 
 
 void init_button( void )
 {
@@ -63,7 +66,6 @@ void init_button( void )
     {
         ESP_LOGI(TAG, "Semaphore created!");
         xSemaphoreTake(xFrameSemaphore, 1000 / portTICK_PERIOD_MS ); 
-
     }
     // Create a semaphore to make operations to curFrame atomic
 
@@ -83,17 +85,18 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 // Semaphore can't handel nested calls? 
 static void gpio_task_example(void* arg)
 {
-
     gpio_num_t io_num;
-    for(;;) {
-        if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
-            
+    
+    for(;;) 
+    {
+        if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) 
+        {
             printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level(io_num));
 
             // Somewhat of an oversight... 
             // Should have used UART instead of a button 
             // This is delay is so that the tripod stops wobbeling 
-            vTaskDelay(  5000 / portTICK_PERIOD_MS );
+            //vTaskDelay(  3000 / portTICK_PERIOD_MS );
 
             // Loop until we actually get the frame most likely!!!
             curFrame = esp_camera_fb_get();
@@ -103,8 +106,8 @@ static void gpio_task_example(void* arg)
                 ESP_LOGI(TAG, "Lenght: %d", curFrame->len);
                 ESP_LOGI(TAG, "Width: %d", curFrame->width);
                 ESP_LOGI(TAG, "Height: %d", curFrame->height);
-
-                esp_camera_fb_return(curFrame);
+                
+                //frame2jpg(curFrame, 80, &jpgBuf, &bufLen);
 
                 // Unblock the curFrame resource
                 if( xSemaphoreGive(xFrameSemaphore) != pdTRUE )
@@ -120,4 +123,19 @@ static void gpio_task_example(void* arg)
                  
         }
     }
+}
+
+
+void free_mem()
+{   
+    free(jpgBuf);
+     
+    if(curFrame != NULL)
+    {   
+        // Free the frame buffer
+        esp_camera_fb_return(curFrame); 
+
+    }
+
+    return; 
 }

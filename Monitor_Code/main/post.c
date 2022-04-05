@@ -9,9 +9,6 @@
 
 static const char* TAG = "HTTP Client";
 
-SemaphoreHandle_t xFrameSemaphore = NULL;
-camera_fb_t *curFrame = NULL;
-
 esp_err_t _http_event_handle(esp_http_client_event_t *evt)
 {
     switch(evt->event_id) 
@@ -51,18 +48,12 @@ esp_err_t _http_event_handle(esp_http_client_event_t *evt)
 // Make the jpg send in chunks instead of all at once? 
 void http_post_task(void *pvParameters)
 {
-
     while(1)
     {   
-        // Move the image capture functionality to button or camera!!! 
-        size_t bufLen; 
-        uint8_t* jpegBuf; 
 
         if( xSemaphoreTake(xFrameSemaphore, 1000 / portTICK_PERIOD_MS ) == pdTRUE )
         {  
-            // Maybe I should put this in button? 
-            frame2jpg(curFrame, 80, &jpegBuf, &bufLen);
-
+        
             // I had this url wrong the whole time I think :( improve the way this is set!! 
             esp_http_client_config_t config = {
             .url = "http://10.0.0.118:80",
@@ -73,7 +64,8 @@ void http_post_task(void *pvParameters)
 
             esp_http_client_set_method(client, HTTP_METHOD_POST);
             esp_http_client_set_header(client, "Content-Type", "image/jpeg");
-            esp_http_client_set_post_field(client, (const char*) jpegBuf, bufLen);
+            //esp_http_client_set_post_field(client, (const char*) jpgBuf, bufLen);
+            esp_http_client_set_post_field(client, (const char*) (curFrame->buf), curFrame->len);
             esp_err_t  err = esp_http_client_perform(client);
 
             if (err == ESP_OK) 
@@ -88,6 +80,9 @@ void http_post_task(void *pvParameters)
             }
 
             esp_http_client_cleanup(client);
+
+            free_mem();
+
         
             ESP_LOGI(TAG, "Starting again!");
 

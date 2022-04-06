@@ -16,21 +16,15 @@ class ProduceDataset(torch.utils.data.Dataset):
         self.root = root
         self.transforms = transforms
         self.coco = COCO(annotations)
-        self.ids = list(sorted(self.coco.imgs.keys())) # Maybe I'm meant to use getImgIds?
+        self.ids = list(sorted(self.coco.imgs.keys()))
         
-        # assert(os.path.exists(root)), "Path: " + root + " does not exist!"
-        # self.image_files = list(sorted(os.listdir(root)))
 
     def __getitem__(self, index):
-        # image_path = os.path.join(self.root, self.image_files[idx])
-        # image = Image.open(image_path) #.convert("RGB") # Don't forget to convert to RGB 
-        # image = transforms.ToTensor()(image)
-
         coco = self.coco
 
         image_id = self.ids[index]
 
-        image_path = coco.loadImgs(image_id)[0]['file_name'] # Why don't I use this the way its done in the api? 
+        image_path = coco.loadImgs(image_id)[0]['file_name']
         image = Image.open(os.path.join(self.root, image_path))
 
         # Annotations hold bounding box info 
@@ -67,7 +61,6 @@ class ProduceDataset(torch.utils.data.Dataset):
         iscrowd = torch.zeros((objects_in_image,), dtype=torch.int64)
 
         # A dictionary with the required feilds for pycocotools 
-        # Make everything a tensor!!! 
         target = {}
         target["boxes"] = boxes
         target["labels"] = labels

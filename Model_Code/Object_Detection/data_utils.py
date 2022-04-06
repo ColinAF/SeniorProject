@@ -7,7 +7,7 @@ import tarfile
 
 # Paths relative to main senior project directory #
 DATASET_NAME = "fruit_test"
-DATASETS_PATH = "assets/" + DATASET_NAME + "/images/" 
+DATASETS_PATH = "assets/datasets/" + DATASET_NAME + "/images/" 
 
 ARCHIVE_NAME = ""
 ARCHIVE_PATH = "assets/archives/" + ARCHIVE_NAME # 

@@ -1,9 +1,13 @@
 
+### Data Utilities ###
 # A tool meant to merge files from different databases created in the Test_Server
 # !!! WARNING: this code is almost totally untested !!!
+
+### External Imports ###
 import os
 import shutil
 import tarfile
+### External Imports ###
 
 # Paths relative to main senior project directory #
 DATASET_NAME = "fruit_test"
@@ -116,3 +120,5 @@ def importDataset(archivePath):
     with tarfile.open(ARCHIVE_PATH, 'r:xz') as archive:
         archive.extractall(DATASETS_PATH) # This could be dangerous it would be smart to check if we need to merge first! 
 ## Potentially change these functions so compression type can be found on the fly ##
+
+### Data Utilities ###

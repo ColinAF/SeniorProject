@@ -1,3 +1,4 @@
 Monitor_Code/build/
 assets/datasets/
 Model_Code/Object_Detection/__pycache__
+tools/

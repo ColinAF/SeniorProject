@@ -1,9 +1,9 @@
 ### NOTES ###
 # - Add a module that keeps track of hyperparams and paths in json
-# - Add more data transforms!!! 
+# - Add data transforms!!! 
 # - Files for {train,test/validate,model,visualizations}
 # - Super helpful tutorial: https://medium.com/fullstackai/how-to-train-an-object-detector-with-your-own-coco-dataset-in-pytorch-319e7090da5
-# - Export timeings to a file!
+# - Export timing data to a file? 
 # - Consider an adaptive learning rate
 # - Visualizations for trained model!! 
 ### NOTES ###
@@ -43,8 +43,8 @@ num_classes = 3
 # Training Params 
 num_epochs = 10
 
-device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 #device = torch.device('cpu') 
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 def collate_fn(batch):
     return tuple(zip(*batch))
@@ -56,16 +56,15 @@ def time_elapsed(t_finish, t_start):
 
 
 def main():
-    # Load custom dataset 
     train_dataset = ProduceDataset(root=root_path, 
-                                annotations=annotations_path,
-                                transforms=transforms.ToTensor())
+                                   annotations=annotations_path,
+                                   transforms=transforms.ToTensor())
     # Add Data Transforms
     train_dataloader = DataLoader(train_dataset, 
-                                batch_size=train_batch_size, 
-                                shuffle=shuffle, 
-                                num_workers=num_workers,
-                                collate_fn=collate_fn)
+                                  batch_size=train_batch_size, 
+                                  shuffle=shuffle, 
+                                  num_workers=num_workers,
+                                  collate_fn=collate_fn)
 
     train(train_dataloader)
 
@@ -115,5 +114,14 @@ def train(train_dataloader):
     t_finish = time.time()
     print("Time training: " + time_elapsed(t_finish, t_start))
 
+# Compare the trained model to test dataset
+def test():
+    pass
+
+# Compare the trained model to validation dataset
+def validate():
+    pass
+
 main()
+
 ### Training Script ###

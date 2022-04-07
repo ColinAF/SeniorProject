@@ -1,0 +1,27 @@
+{
+    "dataset_params": 
+        {
+            "root_path" : "assets/datasets/fruit_test/images/",
+            "annotations_path" : "assets/datasets/fruit_test/annotations.json"
+        },
+    "training_dataloader_params": 
+        {
+            "train_batch_size" : 1,
+            "shuffle" : true,
+            "num_workers" : 4
+        }, 
+    "optimizer_params": 
+        {
+            "learning_rate" : 0.005,
+            "momentum" : 0.9,
+            "weight_decay" : 0.0005
+        },
+    "model_params": 
+        {
+            "num_classes" : 3   
+        }, 
+    "training_params": 
+        {
+            "num_epochs" : 10
+        }
+}

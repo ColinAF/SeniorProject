@@ -4,9 +4,6 @@
 import matplotlib.pyplot as plt 
 ### External Imports ###
 
-### Local Imports ### 
-### Local Imports ### 
-
 def displayImage():
     pass 
 # # Display image and label.
@@ -18,5 +15,8 @@ def displayImage():
 # plt.show()
 # #print(train_labels)
 
+# Would be cool to have a function that plotted losses
+def plotLoses():
+    pass 
 
 ### Visualizations ###

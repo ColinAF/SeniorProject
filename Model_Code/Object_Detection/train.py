@@ -1,7 +1,8 @@
 ### Training Script ###
 
 ### External Imports ###
-import torch # Get more specific things 
+import torch # Get more specific things
+import time  
 from torch.utils.data import DataLoader
 from torchvision import transforms
 ### External Imports ###
@@ -36,7 +37,7 @@ train_dataloader = DataLoader(train_dataset,
 #device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 device = torch.device('cpu') # Training uses way too much GPU atm see if I can manage this better!
 
-## Add time info and epoch count! ##
+
 num_classes = 3
 num_epochs = 10
 model = get_model(num_classes)
@@ -50,9 +51,16 @@ optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0005)
 
 len_dataloader = len(train_dataloader)
 
+print("Start Training!")
+
+t0 = time.time()
+
 for epoch in range(num_epochs):
     model.train()
-    i = 0    
+    i = 0
+
+    print("Epoch: " + str(epoch))
+
     for imgs, annotations in train_dataloader :
         i += 1
         imgs = list(img.to(device) for img in imgs)
@@ -65,7 +73,10 @@ for epoch in range(num_epochs):
         optimizer.step()
 
         print(f'Iteration: {i}/{len_dataloader}, Loss: {losses}')
-## Add time info and epoch count! ##
+
+t1 = time.time()
+print("Took " + (t1 - t0) + " seconds to train!")
+
 
 
 ### All this is still copied from the tutorial for testing! - Not Mine ###

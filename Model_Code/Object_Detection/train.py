@@ -1,5 +1,4 @@
 ### NOTES ###
-# - Add a module that keeps track of hyperparams and paths in json
 # - Add data transforms!!! 
 # - Files for {train,test/validate,model,visualizations}
 # - Super helpful tutorial: https://medium.com/fullstackai/how-to-train-an-object-detector-with-your-own-coco-dataset-in-pytorch-319e7090da5
@@ -11,6 +10,7 @@
 ### Training Script ###
 
 ### External Imports ###
+import json 
 import torch # Get more specific things
 import time  
 from torch.utils.data import DataLoader
@@ -23,32 +23,35 @@ from produce_dataset import ProduceDataset
 from produce_detector import get_model
 ### Local Imports ### 
 
+# JSON was probably overkill, make this more readable
+params_json = open("Model_Code/Object_Detection/params.json", "r")
+params = json.load(params_json)
+
 # Dataset Params
-root_path = DATASETS_PATH 
-annotations_path = "assets/datasets/fruit_test/annotations.json"
+root_path = params["dataset_params"]["root_path"]
+annotations_path = params["dataset_params"]["annotations_path"]
 
 # Training Dataloader Params 
-train_batch_size = 1
-shuffle = True 
-num_workers = 4 
+train_batch_size = params["training_dataloader_params"]["train_batch_size"]
+shuffle = params["training_dataloader_params"]["shuffle"]
+num_workers = params["training_dataloader_params"]["num_workers"]
 
-# Optamizer Params
-learning_rate = 0.005
-momentum = 0.9
-weight_decay = 0.0005
+# Optimizer Params
+learning_rate = params["optimizer_params"]["learning_rate"]
+momentum = params["optimizer_params"]["momentum"]
+weight_decay = params["optimizer_params"]["weight_decay"]
 
 # Model Params
-num_classes = 3
+num_classes = params["model_params"]["num_classes"]
 
 # Training Params 
-num_epochs = 10
+num_epochs = params["training_params"]["num_epochs"]
 
 #device = torch.device('cpu') 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 def collate_fn(batch):
     return tuple(zip(*batch))
-
 
 def time_elapsed(t_finish, t_start):
         t_elapsed = time.gmtime((t_finish - t_start))

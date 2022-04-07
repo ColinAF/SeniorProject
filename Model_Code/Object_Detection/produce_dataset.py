@@ -49,7 +49,7 @@ class ProduceDataset(torch.utils.data.Dataset):
 
         labels = torch.ones((objects_in_image,), dtype=torch.int64)
 
-        image_id = torch.tensor([image_id]) # Put id in a tensor 
+        image_id = torch.tensor([image_id])
 
         areas = []
 

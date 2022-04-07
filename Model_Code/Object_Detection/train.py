@@ -3,7 +3,7 @@
 # - Add more data transforms!!! 
 # - Files for {train,test/validate,model,visualizations}
 # - Super helpful tutorial: https://medium.com/fullstackai/how-to-train-an-object-detector-with-your-own-coco-dataset-in-pytorch-319e7090da5
-# - Export timeings to a CSV file!
+# - Export timeings to a file!
 # - Consider an adaptive learning rate
 # - Visualizations for trained model!! 
 ### NOTES ###
@@ -11,7 +11,6 @@
 ### Training Script ###
 
 ### External Imports ###
-from random import shuffle
 import torch # Get more specific things
 import time  
 from torch.utils.data import DataLoader
@@ -47,76 +46,74 @@ num_epochs = 10
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 #device = torch.device('cpu') 
 
-# Load custom dataset 
-train_dataset = ProduceDataset(root=root_path, 
-                               annotations=annotations_path,
-                               transforms=transforms.ToTensor())
-
-
 def collate_fn(batch):
     return tuple(zip(*batch))
 
-# Add Data Transforms
-train_dataloader = DataLoader(train_dataset, 
-                              batch_size=train_batch_size, 
-                              shuffle=shuffle, 
-                              num_workers=num_workers,
-                              collate_fn=collate_fn)
-
-
-model = get_model(num_classes)
-
-# move model to the right device
-model.to(device)
-    
-# parameters
-params = [p for p in model.parameters() if p.requires_grad]
-optimizer = torch.optim.SGD(params, 
-                            lr=learning_rate, 
-                            momentum=momentum, 
-                            weight_decay=weight_decay)
-
-len_dataloader = len(train_dataloader)
 
 def time_elapsed(t_finish, t_start):
-    t_elapsed = time.gmtime((t_finish - t_start))
-    return (time.strftime("%H:%M:%S", t_elapsed))
+        t_elapsed = time.gmtime((t_finish - t_start))
+        return (time.strftime("%H:%M:%S", t_elapsed))
 
-print("Start Training!")
 
-t_start = time.time()
-t_last_epoch = t_start
+def main():
+    # Load custom dataset 
+    train_dataset = ProduceDataset(root=root_path, 
+                                annotations=annotations_path,
+                                transforms=transforms.ToTensor())
+    # Add Data Transforms
+    train_dataloader = DataLoader(train_dataset, 
+                                batch_size=train_batch_size, 
+                                shuffle=shuffle, 
+                                num_workers=num_workers,
+                                collate_fn=collate_fn)
 
-for epoch in range(num_epochs):
-    torch.cuda.empty_cache()
-    model.train()
+    train(train_dataloader)
 
-    t_epoch = time.time()
-    t_last_epoch = t_epoch
-
-    i = 0 
-
-    for images, annotations in train_dataloader :
+def train(train_dataloader):
+    model = get_model(num_classes)
+    model.to(device)
         
-        images = list(image.to(device) for image in images)
-        annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-        loss_dict = model(images, annotations)
-        losses = sum(loss for loss in loss_dict.values())
+    parameters = [p for p in model.parameters() if p.requires_grad]
+    optimizer = torch.optim.SGD(parameters, 
+                                lr=learning_rate, 
+                                momentum=momentum, 
+                                weight_decay=weight_decay)
 
-        optimizer.zero_grad()
-        losses.backward()
-        optimizer.step()
+    len_dataloader = len(train_dataloader)
 
-        i+=1
+    print("Starting Training!")
+    t_start = time.time()
+    t_last_epoch = t_start
 
-        print(f'Epoch: {epoch+1} Iteration: {i}/{len_dataloader}, Loss: {losses}')
-    
-    print("Epoch: " + str(epoch+1) + 
-          " Time in epoch: " + 
-          time_elapsed(t_epoch, t_last_epoch))
+    for epoch in range(num_epochs):
+        torch.cuda.empty_cache()
+        model.train()
 
-t_finish = time.time()
-print("Took " + time_elapsed(t_finish, t_start) + " seconds to train!")
+        t_epoch = time.time()
+        t_last_epoch = t_epoch
 
+        i = 0 
 
+        for images, annotations in train_dataloader :
+            images = list(image.to(device) for image in images)
+            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+            loss_dict = model(images, annotations)
+            losses = sum(loss for loss in loss_dict.values())
+
+            optimizer.zero_grad()
+            losses.backward()
+            optimizer.step()
+            i+=1
+
+            print(f'Epoch: {epoch+1} Iteration: {i}/{len_dataloader}, Loss: {losses}')
+        
+        print("Epoch: " + 
+              str(epoch+1) + 
+              " Time in epoch: " + 
+              time_elapsed(t_epoch, t_last_epoch))
+
+    t_finish = time.time()
+    print("Time training: " + time_elapsed(t_finish, t_start))
+
+main()
 ### Training Script ###

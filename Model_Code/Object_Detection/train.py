@@ -2,8 +2,7 @@
 # - Add data transforms!!! 
 # - Files for {train,test/validate,model,visualizations}
 # - Super helpful tutorial: https://medium.com/fullstackai/how-to-train-an-object-detector-with-your-own-coco-dataset-in-pytorch-319e7090da5
-# - Export timing data to a file? 
-# - Consider an adaptive learning rate
+# - Add adaptive learning rate
 # - Visualizations for trained model!! 
 ### NOTES ###
 
@@ -18,12 +17,12 @@ from torchvision import transforms
 ### External Imports ###
 
 ### Local Imports ### 
-from data_utils import DATASETS_PATH # Put pathnames and hyperparams in JSON 
 from produce_dataset import ProduceDataset  
+from csv_logger import CSVLogger
 from produce_detector import get_model
 ### Local Imports ### 
 
-# JSON was probably overkill, make this more readable
+## JSON was probably overkill, make this more readable ##
 params_json = open("Model_Code/Object_Detection/params.json", "r")
 params = json.load(params_json)
 
@@ -46,6 +45,7 @@ num_classes = params["model_params"]["num_classes"]
 
 # Training Params 
 num_epochs = params["training_params"]["num_epochs"]
+## JSON was probably overkill, make this more readable ##
 
 #device = torch.device('cpu') 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -53,6 +53,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 def collate_fn(batch):
     return tuple(zip(*batch))
 
+# Time should be gathered here? (make t_finish optional!!!)
 def time_elapsed(t_finish, t_start):
         t_elapsed = time.gmtime((t_finish - t_start))
         return (time.strftime("%H:%M:%S", t_elapsed))
@@ -69,9 +70,12 @@ def main():
                                   num_workers=num_workers,
                                   collate_fn=collate_fn)
 
-    train(train_dataloader)
+    stats = CSVLogger('test_stats.csv', ["Epoch", "Time", "Loss"]) # These should also go in params.json
 
-def train(train_dataloader):
+    train(train_dataloader, stats)
+
+# Train the model
+def train(train_dataloader, stats):
     model = get_model(num_classes)
     model.to(device)
         
@@ -108,15 +112,17 @@ def train(train_dataloader):
             i+=1
 
             print(f'Epoch: {epoch+1} Iteration: {i}/{len_dataloader}, Loss: {losses}')
+            stats.log([(epoch+1), (time_elapsed(time.time(), t_start)), f'{losses}'])
         
         print("Epoch: " + 
               str(epoch+1) + 
               " Time in epoch: " + 
-              time_elapsed(t_epoch, t_last_epoch))
+              time_elapsed(t_epoch, t_last_epoch))       
 
     t_finish = time.time()
     print("Time training: " + time_elapsed(t_finish, t_start))
 
+## These should belong in their own modules ##
 # Compare the trained model to test dataset
 def test():
     pass
@@ -124,6 +130,7 @@ def test():
 # Compare the trained model to validation dataset
 def validate():
     pass
+## These should belong in their own modules ##
 
 main()
 

@@ -1,20 +1,20 @@
 ### NOTES ###
 # - Files for {train,test/validate,model,visualizations}
 # - Super helpful tutorial: https://medium.com/fullstackai/how-to-train-an-object-detector-with-your-own-coco-dataset-in-pytorch-319e7090da5
-# - Add data transforms!!! 
-# - Add new dataset
 # - Visualizations for trained model!! 
+# - More Data Augmentation!!!
 # - Create a training timer object? 
 ### NOTES ###
 
 ### Training Script ###
 
 ### External Imports ###
-import json 
+import json
+from matplotlib import transforms 
 import torch # Get more specific things
 import time  
 from torch.utils.data import DataLoader
-from torchvision import transforms
+from torchvision import transforms as T
 ### External Imports ###
 
 ### Local Imports ### 
@@ -48,7 +48,6 @@ num_classes = params["model_params"]["num_classes"]
 num_epochs = params["training_params"]["num_epochs"]
 ## JSON was probably overkill, make this more readable ##
 
-#device = torch.device('cpu') 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 def collate_fn(batch):
@@ -59,11 +58,22 @@ def time_elapsed(t_finish, t_start):
         t_elapsed = time.gmtime((t_finish - t_start))
         return (time.strftime("%H:%M:%S", t_elapsed))
 
+# A stack of transforms for data augmentation
+# Train should be a boolean
+def get_transform(train):
+    transforms = []
+    transforms.append(T.ToTensor())
+    if train:
+        transforms.append(T.RandomHorizontalFlip(0.5))
+        transforms.append(T.RandomHorizontalFlip(0.5))
+        transforms.append(T.RandomRotation(90))
+    
+    return T.Compose(transforms)
 
 def main():
     train_dataset = ProduceDataset(root=root_path, 
                                    annotations=annotations_path,
-                                   transforms=transforms.ToTensor())
+                                   transforms=get_transform(train=True))
     # Add Data Transforms
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size=train_batch_size, 
@@ -100,8 +110,6 @@ def train(train_dataloader, stats):
         torch.cuda.empty_cache()
         model.train()
 
-
-
         i = 0 
 
         for images, annotations in train_dataloader :
@@ -120,11 +128,7 @@ def train(train_dataloader, stats):
             stats.log([(epoch+1), (time_elapsed(time.time(), t_start)), f'{losses}'])
         
         t_epoch = time.time()
-        print("Epoch: " + 
-              str(epoch+1) + 
-              " Time in epoch: " + 
-              time_elapsed(t_epoch, t_last_epoch))       
-
+        print("Epoch: " + str(epoch+1) + " Time in epoch: " + time_elapsed(t_epoch, t_last_epoch))       
         t_last_epoch = t_epoch
 
     t_finish = time.time()

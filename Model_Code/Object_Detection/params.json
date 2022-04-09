@@ -1,8 +1,8 @@
 {
     "dataset_params": 
         {
-            "root_path" : "assets/datasets/fruit_test/images/",
-            "annotations_path" : "assets/datasets/fruit_test/annotations.json"
+            "root_path" : "assets/datasets/produce_training01/images/",
+            "annotations_path" : "assets/datasets/produce_training01/produce.json"
         },
     "training_dataloader_params": 
         {
@@ -22,6 +22,7 @@
         }, 
     "training_params": 
         {
-            "num_epochs" : 10
+            "num_epochs" : 10,
+            "stats_path" : "Model_Code/Object_Detection/training_stats"
         }
 }

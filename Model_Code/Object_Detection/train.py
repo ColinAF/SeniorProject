@@ -2,6 +2,7 @@
 # - Files for {train,test/validate,model,visualizations}
 # - Super helpful tutorial: https://medium.com/fullstackai/how-to-train-an-object-detector-with-your-own-coco-dataset-in-pytorch-319e7090da5
 # - Add data transforms!!! 
+# - Add new dataset
 # - Visualizations for trained model!! 
 # - Create a training timer object? 
 ### NOTES ###
@@ -73,6 +74,7 @@ def main():
     stats = CSVLogger('train_stats00.csv', ["Epoch", "Time", "Loss"]) # These should also go in params.json
 
     train(train_dataloader, stats)
+    test() 
 
 # Train the model
 def train(train_dataloader, stats):
@@ -85,6 +87,7 @@ def train(train_dataloader, stats):
                                 momentum=momentum, 
                                 weight_decay=weight_decay)
 
+    # Add lr scheduler to params.json 
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
 
     len_dataloader = len(train_dataloader)
@@ -97,8 +100,7 @@ def train(train_dataloader, stats):
         torch.cuda.empty_cache()
         model.train()
 
-        t_epoch = time.time()
-        t_last_epoch = t_epoch
+
 
         i = 0 
 
@@ -117,10 +119,13 @@ def train(train_dataloader, stats):
             print(f'Epoch: {epoch+1} Iteration: {i}/{len_dataloader}, Loss: {losses}')
             stats.log([(epoch+1), (time_elapsed(time.time(), t_start)), f'{losses}'])
         
+        t_epoch = time.time()
         print("Epoch: " + 
               str(epoch+1) + 
               " Time in epoch: " + 
               time_elapsed(t_epoch, t_last_epoch))       
+
+        t_last_epoch = t_epoch
 
     t_finish = time.time()
     print("Time training: " + time_elapsed(t_finish, t_start))

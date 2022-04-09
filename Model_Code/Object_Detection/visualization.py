@@ -23,9 +23,13 @@ def plotLoses(stats_file):
     read_stats = csv.DictReader(stats)
 
     losses = np.empty(0)
+    step = np.empty(0)
 
+    i = 1
     for lines in read_stats:
         losses = np.append(losses, float(lines['Loss']))
+        step = np.append(step, (int(lines['Epoch']) * i))
+        i += 1
 
     y = np.arange(start=1, stop=(len(losses)+1), step=1)
 
@@ -33,6 +37,6 @@ def plotLoses(stats_file):
     plt.plot(y, losses, color="red")
     plt.show()
 
-plotLoses('test_stats.csv')
+plotLoses('train_stats00.csv')
 
 ### Visualizations ###

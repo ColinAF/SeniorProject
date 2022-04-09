@@ -121,4 +121,6 @@ def importDataset(archivePath):
         archive.extractall(DATASETS_PATH) # This could be dangerous it would be smart to check if we need to merge first! 
 ## Potentially change these functions so compression type can be found on the fly ##
 
+
+mergeDatasets("/home/colin/SeniorProject/assets/datasets/produce_train01/","/home/colin/Desktop/fruit_test01/")
 ### Data Utilities ###

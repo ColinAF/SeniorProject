@@ -1,11 +1,11 @@
 
 import requests
 
-f = open("../assets/Apple02.jpg", "rb")
+f = open("assets/example_images/example01.jpg", "rb")
 
-url = 'http://10.0.0.118:80'
+url = 'http://localhost:8000/produce_detector/'
 myobj = {'somekey': f}
 
-x = requests.post(url, data = f)
+x = requests.post(url, data = [])
 
 print(x.text)

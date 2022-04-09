@@ -4,6 +4,7 @@ Model_Code/Object_Detection/__pycache__
 tools/
 Server_Code/model_server/produce_detector/__pycache__
 Server_Code/model_server/produce_detector/migrations/__pycache__
+Server_Code/model_server/model_server/__pycache__/
 .vscode/
 Monitor_Code/sdkconfig
 Monitor_Code/.vscode/

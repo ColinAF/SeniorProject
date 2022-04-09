@@ -2,6 +2,7 @@
 # - Files for {train,test/validate,model,visualizations}
 # - Super helpful tutorial: https://medium.com/fullstackai/how-to-train-an-object-detector-with-your-own-coco-dataset-in-pytorch-319e7090da5
 # - Visualizations for trained model!! 
+# - Add test code
 # - More Data Augmentation!!!
 # - Create a training timer object? 
 ### NOTES ###
@@ -67,7 +68,9 @@ def get_transform(train):
         transforms.append(T.RandomHorizontalFlip(0.5))
         transforms.append(T.RandomHorizontalFlip(0.5))
         transforms.append(T.RandomRotation(90))
-    
+        #GaussianBlur
+        #ColorJitter
+
     return T.Compose(transforms)
 
 def main():

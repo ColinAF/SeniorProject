@@ -6,7 +6,7 @@
         },
     "training_dataloader_params": 
         {
-            "train_batch_size" : 1,
+            "train_batch_size" : 16,
             "shuffle" : true,
             "num_workers" : 4
         }, 

@@ -1,6 +1,8 @@
 ### Visualizations ###
 
 ### External Imports ###
+import csv
+import numpy as np
 import matplotlib.pyplot as plt 
 ### External Imports ###
 
@@ -16,7 +18,21 @@ def displayImage():
 # #print(train_labels)
 
 # Would be cool to have a function that plotted losses
-def plotLoses():
-    pass 
+def plotLoses(stats_file):
+    stats = open(stats_file, 'r')
+    read_stats = csv.DictReader(stats)
+
+    losses = np.empty(0)
+
+    for lines in read_stats:
+        losses = np.append(losses, float(lines['Loss']))
+
+    y = np.arange(start=1, stop=(len(losses)+1), step=1)
+
+    plt.title("Loss Plot")
+    plt.plot(y, losses, color="red")
+    plt.show()
+
+plotLoses('test_stats.csv')
 
 ### Visualizations ###

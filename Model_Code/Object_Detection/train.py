@@ -24,6 +24,18 @@ from csv_logger import CSVLogger
 from produce_detector import get_model
 ### Local Imports ### 
 
+## Temp ##
+import math
+import sys
+import time
+
+import torch
+import torchvision.models.detection.mask_rcnn
+import utils
+from coco_eval import CocoEvaluator
+from coco_utils import get_coco_api_from_dataset
+## Temp ##
+
 ## JSON was probably overkill, make this more readable ##
 params_json = open("Model_Code/Object_Detection/params.json", "r")
 params = json.load(params_json)
@@ -49,7 +61,8 @@ num_classes = params["model_params"]["num_classes"]
 num_epochs = params["training_params"]["num_epochs"]
 ## JSON was probably overkill, make this more readable ##
 
-device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+#device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+device = torch.device('cpu')
 
 def collate_fn(batch):
     return tuple(zip(*batch))
@@ -67,7 +80,7 @@ def get_transform(train):
     if train:
         transforms.append(T.RandomHorizontalFlip(0.5))
         transforms.append(T.RandomHorizontalFlip(0.5))
-        transforms.append(T.RandomRotation(90))
+        transforms.append(T.RandomRotation(90)) # Add more roattions
         #GaussianBlur
         #ColorJitter
 
@@ -77,8 +90,15 @@ def main():
     train_dataset = ProduceDataset(root=root_path, 
                                    annotations=annotations_path,
                                    transforms=get_transform(train=True))
-    # Add Data Transforms
+
     train_dataloader = DataLoader(train_dataset, 
+                                  batch_size=train_batch_size, 
+                                  shuffle=shuffle, 
+                                  num_workers=num_workers,
+                                  collate_fn=collate_fn)
+
+    # Just using the same dataset to make sure coco validate works 
+    test_dataloader = DataLoader(train_dataset, 
                                   batch_size=train_batch_size, 
                                   shuffle=shuffle, 
                                   num_workers=num_workers,
@@ -86,13 +106,16 @@ def main():
 
     stats = CSVLogger('train_stats00.csv', ["Epoch", "Time", "Loss"]) # These should also go in params.json
 
-    train(train_dataloader, stats)
-    test() 
-
-# Train the model
-def train(train_dataloader, stats):
     model = get_model(num_classes)
     model.to(device)
+
+    train(model, train_dataloader, stats)
+    test(model, test_dataloader, device) 
+
+
+# Train the model
+def train(model, train_dataloader, stats):
+    
         
     parameters = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(parameters, 
@@ -139,8 +162,59 @@ def train(train_dataloader, stats):
 
 ## These should belong in their own modules ##
 # Compare the trained model to test dataset
-def test():
-    pass
+# Taken from: https://github.com/pytorch/vision/blob/main/references/detection/engine.py
+def _get_iou_types(model):
+    model_without_ddp = model
+    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
+        model_without_ddp = model.module
+    iou_types = ["bbox"]
+    if isinstance(model_without_ddp, torchvision.models.detection.MaskRCNN):
+        iou_types.append("segm")
+    if isinstance(model_without_ddp, torchvision.models.detection.KeypointRCNN):
+        iou_types.append("keypoints")
+    return iou_types
+
+def test(model, data_loader, device):
+    n_threads = torch.get_num_threads()
+    # FIXME remove this and make paste_masks_in_image run on the GPU
+    torch.set_num_threads(1)
+    cpu_device = torch.device("cpu")
+    model.eval()
+    metric_logger = utils.MetricLogger(delimiter="  ")
+    header = "Test:"
+
+    coco = get_coco_api_from_dataset(data_loader.dataset)
+    iou_types = _get_iou_types(model)
+    coco_evaluator = CocoEvaluator(coco, iou_types)
+
+    for images, targets in metric_logger.log_every(data_loader, 100, header):
+        images = list(img.to(device) for img in images)
+
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+        model_time = time.time()
+        outputs = model(images)
+
+        outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+        model_time = time.time() - model_time
+
+        res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+        evaluator_time = time.time()
+        coco_evaluator.update(res)
+        evaluator_time = time.time() - evaluator_time
+        metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
+
+    # gather the stats from all processes
+    metric_logger.synchronize_between_processes()
+    print("Averaged stats:", metric_logger)
+    coco_evaluator.synchronize_between_processes()
+
+    # accumulate predictions from all images
+    coco_evaluator.accumulate()
+    coco_evaluator.summarize()
+    torch.set_num_threads(n_threads)
+    return coco_evaluator 
+# Taken from: https://github.com/pytorch/vision/blob/main/references/detection/engine.py
 
 # Compare the trained model to validation dataset
 def validate():

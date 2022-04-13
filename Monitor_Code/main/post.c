@@ -54,9 +54,10 @@ void http_post_task(void *pvParameters)
         if( xSemaphoreTake(xFrameSemaphore, 1000 / portTICK_PERIOD_MS ) == pdTRUE )
         {  
         
-            // I had this url wrong the whole time I think :( improve the way this is set!! 
+            // I think this works great hardcoded for now
+            // Will need to update the IP and such!  
             esp_http_client_config_t config = {
-            .url = "http://10.0.0.118:80",
+            .url = "http://10.0.0.118:8000/produce_detector/",
             .event_handler = _http_event_handle,
             };
             

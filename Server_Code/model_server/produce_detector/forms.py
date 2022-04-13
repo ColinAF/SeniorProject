@@ -1,5 +1,8 @@
-from socket import fromshare
 from django import forms
-
-class ImageUploadForm(forms.Form):
-    image = forms.ImageField()
+from .models import *
+  
+class ImageForm(forms.ModelForm):
+  
+    class Meta:
+        model = ProduceImage
+        fields = ['name', 'image']

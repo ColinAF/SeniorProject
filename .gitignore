@@ -8,4 +8,6 @@ Server_Code/model_server/model_server/__pycache__/
 .vscode/
 Monitor_Code/sdkconfig
 Monitor_Code/.vscode/
+train_stats00.csv
+
 

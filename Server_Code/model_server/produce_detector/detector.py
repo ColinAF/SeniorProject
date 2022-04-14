@@ -37,7 +37,7 @@ class ObjectDetector:
         
     # Evaluate an image! 
     def run_model(self, name):
-        test_int = read_image(str(Path('media\images') / name))
+        test_int = read_image(str(Path('media/images') / name))
         test_int = test_int.to(self.device)
 
         # is it really worth making a batch? 
@@ -56,5 +56,20 @@ class ObjectDetector:
         im = torchvision.transforms.ToPILImage()(im)
         im.save("media/images/produce_bowl.jpg", "JPEG")
 
+
+        produce = {}
+        for i in lb:
+            if outputs[0]['scores'][i] > score_threshold:
+                
+                class_value = produce.get(lb[i])
+
+                if class_value == None:
+                    produce.update({lb[i]: 1})  
+                else:
+                    class_value += 1
+                    produce.update({lb[i]: class_value})
+
+        print(produce)
         # I should return info about the predictions as well!! 
+        # Return a dict with classes and counts
 

@@ -53,7 +53,7 @@ class ObjectDetector:
 
         score_threshold = .50
 
-        im = draw_bounding_boxes(test_int, boxes=outputs[0]['boxes'][outputs[0]['scores'] > score_threshold], labels=lb, width=4)
+        im = draw_bounding_boxes(test_int, boxes=outputs[0]['boxes'][outputs[0]['scores'] > score_threshold], colors='green', labels=lb, width=4)
         im = torchvision.transforms.ToPILImage()(im)
         im.save("media/images/produce_bowl.jpg", "JPEG")
 

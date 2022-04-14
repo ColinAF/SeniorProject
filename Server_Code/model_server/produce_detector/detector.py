@@ -27,7 +27,6 @@ inst_classes = [
 
 
 class ObjectDetector: 
-    
     # Load model into memory and choose a device
     def __init__(self):
         self.device = torch.device("cpu") # Make this platform agnostic 

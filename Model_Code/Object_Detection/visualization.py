@@ -1,21 +1,49 @@
 ### Visualizations ###
 
 ### External Imports ###
+import torch
 import csv
 import numpy as np
+import torchvision
 import matplotlib.pyplot as plt 
+from torchvision.utils import draw_bounding_boxes
 ### External Imports ###
+
+# Evaluate an image! 
+def visualize_predictions(dataloader, model=None):
+    # Display images and label.
+    device = torch.device('cpu')
+    score_threshold = .70      
+    lb = ['banana', 'kiwi','background','background'] # Fix labeling 
+    imgs = []
+
+    if model is not None: 
+        model.to(device)
+        model.eval()
+
+    for images, annotations in dataloader:
+        if model is not None: 
+            images = list(image.to(device) for image in images)
+            outputs = model(images)
+            img = torchvision.transforms.ConvertImageDtype(torch.uint8)(images[0])
+            img = draw_bounding_boxes(img, boxes=outputs[0]['boxes'][outputs[0]['scores'] > score_threshold], labels=lb, colors="green", width=4)
+        else: 
+            img = torchvision.transforms.ConvertImageDtype(torch.uint8)(images[0])
+            img = draw_bounding_boxes(img, boxes=annotations[0]['boxes'], labels=lb, colors="green", width=4)
+            
+        imgs.append(img)
+
+    imshow(torchvision.utils.make_grid(imgs[0:4]))
+
 
 def displayImage():
     pass 
-# # Display image and label.
-# train_features, train_labels = next(iter(train_dataloader))
-# # image shape is [batch_size, 3 (due to RGB), height, width]
-# print(train_features.shape)
-# img = transforms.ToPILImage()(train_features[0])
-# plt.imshow(img)
-# plt.show()
-# #print(train_labels)
+
+def imshow(img):
+    img = img      # unnormalize
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
 
 # Would be cool to have a function that plotted losses
 def plotLoses(stats_file):
@@ -37,6 +65,6 @@ def plotLoses(stats_file):
     plt.plot(y, losses, color="red")
     plt.show()
 
-plotLoses('train_stats00.csv')
+#plotLoses('train_stats00.csv')
 
 ### Visualizations ###

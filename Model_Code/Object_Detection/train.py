@@ -22,6 +22,7 @@ from torchvision import transforms as T
 from produce_dataset import ProduceDataset  
 from csv_logger import CSVLogger
 from produce_detector import get_model
+from visualization import visualize_predictions
 ### Local Imports ### 
 
 ## Temp ##
@@ -61,8 +62,8 @@ num_classes = params["model_params"]["num_classes"]
 num_epochs = params["training_params"]["num_epochs"]
 ## JSON was probably overkill, make this more readable ##
 
-#device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-device = torch.device('cpu')
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+#device = torch.device('cpu')
 
 def collate_fn(batch):
     return tuple(zip(*batch))
@@ -89,7 +90,7 @@ def get_transform(train):
 def main():
     train_dataset = ProduceDataset(root=root_path, 
                                    annotations=annotations_path,
-                                   transforms=get_transform(train=True))
+                                   transforms=get_transform(train=False))
 
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size=train_batch_size, 
@@ -109,13 +110,17 @@ def main():
     model = get_model(num_classes)
     model.to(device)
 
+    #visualize_predictions(test_dataloader)
+
+    # Make this only one epoch and bring main loop out here
     train(model, train_dataloader, stats)
-    test(model, test_dataloader, device) 
+
+    visualize_predictions(train_dataloader, model)
+    # test(model, test_dataloader, device) 
 
 
 # Train the model
 def train(model, train_dataloader, stats):
-    
         
     parameters = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(parameters, 

@@ -15,12 +15,16 @@ def index(request):
 
     if request.method == 'POST':
         # Make sure the image updates properly
+        ProduceImage.objects.all().delete()
         im = request.body
         image_name = 'produce_bowl' + time.strftime("_%H_%M_%S", time.gmtime()) + '.jpg'
         save_image(im, image_name)
-        odm.run_model(image_name)
-        # pst = ProduceImage(name='test0', image=im)
-        # pst.save()
+        produce = odm.run_model(image_name)
+        print(produce)
+
+        for i in produce:
+            pst = ProduceImage(object_class=i, qty=produce[i])
+            pst.save()
         # Should probably clean up the images eventually! 
     else:
        # Default Image
@@ -30,6 +34,7 @@ def index(request):
     bowl = ProduceImage.objects.all().values()
     template = loader.get_template('produce_detector/index.html')
     
+    print(bowl)
     context = {'bowl' : bowl, 'image_name' : image_name}
 
     return HttpResponse(template.render(context, request)) # Make it so that things update everywhere on a post!

@@ -52,10 +52,9 @@ class ObjectDetector:
 
         score_threshold = .50
 
-        im = draw_bounding_boxes(test_int, boxes=outputs[0]['boxes'][outputs[0]['scores'] > score_threshold], colors='green', labels=lb, width=4)
+        im = draw_bounding_boxes(test_int, boxes=outputs[0]['boxes'][outputs[0]['scores'] > score_threshold], labels=lb, width=4) # windows doesn't like the color argument for some reason?
         im = torchvision.transforms.ToPILImage()(im)
         im.save("media/images/produce_bowl.jpg", "JPEG")
-
 
         produce = {}
         for i in lb:
@@ -69,7 +68,5 @@ class ObjectDetector:
                     class_value += 1
                     produce.update({lb[i]: class_value})
 
-        print(produce)
-        # I should return info about the predictions as well!! 
-        # Return a dict with classes and counts
+        return produce
 

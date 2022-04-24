@@ -57,7 +57,8 @@ void http_post_task(void *pvParameters)
             // I think this works great hardcoded for now
             // Will need to update the IP and such!  
             esp_http_client_config_t config = {
-            .url = "http://10.0.0.118:8000/produce_detector/",
+            //.url = "http://10.0.0.118:8000/produce_detector/",
+            .url = "http://10.0.0.118",
             .event_handler = _http_event_handle,
             };
             

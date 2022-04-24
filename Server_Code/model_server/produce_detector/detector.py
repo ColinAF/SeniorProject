@@ -25,7 +25,6 @@ inst_classes = [
     'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
 ]
 
-
 class ObjectDetector: 
     # Load model into memory and choose a device
     def __init__(self):

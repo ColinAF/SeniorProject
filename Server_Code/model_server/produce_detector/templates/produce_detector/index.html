@@ -16,20 +16,22 @@
 </head>
 <body>
 
-<div class="container-fluid p-5 bg-primary text-white text-center">
+<div class="container-fluid p-5 bg-success text-white text-center">
   <h1>Produce Monitor</h1>
   <p>Welcome! Lets take a look at what you have in your fruit bowl.</p>
+  <p id="clock"></p>
 </div>
 
 <div class="container mt-5">
-  <div class="row">
-    <div class="col-sm-4">
-      <h3>Take a look!</h3>
+  <div class="col">
+
+    <div class="col-lg-12">
       <img src="media\images\{{ image_name }}.jpg" alt="Image of your Bowl", style="width: 100%; height: auto;">
     </div>
-    <div class="col-sm-4">
-      <h3>Inventory </h3>
-      <table border="2">
+
+    <div class="col-md-12">
+      <div class="table-responsive">
+      <table class="table table-bordered table-hover">
         {% for x in bowl %}
         <tr>
         <td>{{ x.object_class }}</td>
@@ -37,13 +39,12 @@
         </tr>
         {% endfor %}
         </table>
+      </div>
     </div>
-    <div class="col-sm-4">
-      <h3>Extra Info </h3>
-      <p id="clock"></p>
-
-    </div>
+    
   </div>
+
+
 </div>
 
 </body>
@@ -58,7 +59,6 @@
       window.location.reload();
   }
 
-  // I dunno why I guess I was board... 
   function currentTime() 
   {
       let date = new Date();

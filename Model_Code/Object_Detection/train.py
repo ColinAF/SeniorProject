@@ -94,13 +94,13 @@ def main():
                                    annotations="assets/datasets/banana_kiwi/banana_kiwi.json",
                                    transforms=get_transform(train=True))
 
-    new_dataset = ProduceDataset(root=root_path, 
+    full_dataset = ProduceDataset(root=root_path, 
                                    annotations=annotations_path,
                                    transforms=get_transform(train=True))
     
-    full_dataset = torch.utils.data.ConcatDataset([kiwi_banana, new_dataset])
+    #full_dataset = torch.utils.data.ConcatDataset([kiwi_banana, new_dataset])
 
-    train_size = int(0.5 * len(full_dataset))
+    train_size = int(0.8 * len(full_dataset))
     test_size = len(full_dataset) - train_size
 
     val_size = int(0.2 * test_size)
@@ -148,7 +148,7 @@ def train(model, train_dataloader, test_dataloader, stats):
                                 )
 
     # Add lr scheduler to params.json 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
 
     len_dataloader = len(train_dataloader)
 

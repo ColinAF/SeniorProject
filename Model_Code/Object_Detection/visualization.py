@@ -13,8 +13,12 @@ from torchvision.utils import draw_bounding_boxes
 def visualize_predictions(dataloader, model=None):
     # Display images and label.
     device = torch.device('cpu')
-    score_threshold = .70      
-    lb = ['banana', 'kiwi','background','background'] # Fix labeling 
+    score_threshold = .10     
+
+    inst_classes = [
+        '_background_', 'apple', 'kiwi', 'lemon', 'banana', 'lime', 'tangerine', 'garlic', 'avocado'
+    ]
+
     imgs = []
 
     if model is not None: 
@@ -25,9 +29,20 @@ def visualize_predictions(dataloader, model=None):
         if model is not None: 
             images = list(image.to(device) for image in images)
             outputs = model(images)
+
+            lb = {}
+
+            for i in range(len(outputs[0]['labels'])):
+                lb[i] = inst_classes[outputs[0]['labels'][i]]
+
             img = torchvision.transforms.ConvertImageDtype(torch.uint8)(images[0])
             img = draw_bounding_boxes(img, boxes=outputs[0]['boxes'][outputs[0]['scores'] > score_threshold], labels=lb, colors="green", width=4)
         else: 
+            lb = {}
+            
+            for i in range(len(annotations[0]['labels'])):
+                lb[i] = inst_classes[annotations[0]['labels'][i]]
+                
             img = torchvision.transforms.ConvertImageDtype(torch.uint8)(images[0])
             img = draw_bounding_boxes(img, boxes=annotations[0]['boxes'], labels=lb, colors="green", width=4)
             
@@ -65,6 +80,6 @@ def plotLoses(stats_file):
     plt.plot(y, losses, color="red")
     plt.show()
 
-#plotLoses('train_stats00.csv')
+plotLoses('train_stats00.csv')
 
 ### Visualizations ###

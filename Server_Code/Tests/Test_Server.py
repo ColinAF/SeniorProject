@@ -4,8 +4,8 @@ import logging
 import os
 import socket
 
-DATASET_NAME = "fruit_test"
-DATASETS_PATH = "assets/" + DATASET_NAME + "/images/" # When opening from the main project directory
+DATASET_NAME = "fruit_train01"
+DATASETS_PATH = "assets/datasets/" + DATASET_NAME + "/images/" # When opening from the main project directory
 
 FILL_SIZE = 3 # Zero Padding for filenames 
 FILE_EXTENSION_LEN = len(".jpg")

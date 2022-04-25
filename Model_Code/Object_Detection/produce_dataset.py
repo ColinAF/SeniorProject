@@ -2,8 +2,10 @@
 
 ### External Imports ###
 import os
+import cv2
 import numpy as np
 import torch
+import torchvision
 from torchvision import transforms
 from PIL import Image
 from pycocotools.coco import COCO
@@ -25,7 +27,9 @@ class ProduceDataset(torch.utils.data.Dataset):
         image_id = self.ids[index]
 
         image_path = coco.loadImgs(image_id)[0]['file_name']
-        image = Image.open(os.path.join(self.root, image_path))
+        #image = Image.open(os.path.join(self.root, image_path))
+        image = cv2.imread(os.path.join(self.root, image_path))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # Annotations hold bounding box info 
         annotation_ids = coco.getAnnIds(imgIds=image_id)
@@ -47,7 +51,7 @@ class ProduceDataset(torch.utils.data.Dataset):
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)     
 
-        labels = torch.ones((objects_in_image,), dtype=torch.int64)
+        labels = []
 
         image_id = torch.tensor([image_id])
 
@@ -55,8 +59,11 @@ class ProduceDataset(torch.utils.data.Dataset):
 
         for i in range(objects_in_image):
                 areas.append(annotation[i]['area'])
+                labels.append(annotation[i]['category_id'])
 
+        class_labels = labels 
         areas = torch.as_tensor(areas, dtype=torch.float64)
+        labels = torch.as_tensor(labels, dtype=torch.int64)
     
         iscrowd = torch.zeros((objects_in_image,), dtype=torch.int64)
 
@@ -68,8 +75,13 @@ class ProduceDataset(torch.utils.data.Dataset):
         target["area"] = areas
         target["iscrowd"] = iscrowd
 
+        # if self.transforms is not None:
+        #     image = self.transforms(image)
+
         if self.transforms is not None:
-            image = self.transforms(image)
+            transformed = self.transforms(image=image, bboxes=boxes, class_labels=class_labels)
+            target["boxes"] = torch.as_tensor(transformed["bboxes"], dtype=torch.float32)  
+            image = transformed["image"]
 
         return image, target 
 

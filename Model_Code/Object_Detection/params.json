@@ -1,28 +1,28 @@
 {
     "dataset_params": 
         {
-            "root_path" : "assets/datasets/produce_training01/images/",
-            "annotations_path" : "assets/datasets/produce_training01/produce.json"
+            "root_path" : "assets/datasets/fruit_train01/images/",
+            "annotations_path" : "assets/datasets/fruit_train01/fruit_test02.json"
         },
     "training_dataloader_params": 
         {
-            "train_batch_size" : 16,
+            "train_batch_size" : 10,
             "shuffle" : true,
             "num_workers" : 4
         }, 
     "optimizer_params": 
         {
-            "learning_rate" : 0.005,
+            "learning_rate" : 0.025,
             "momentum" : 0.9,
             "weight_decay" : 0.0005
         },
     "model_params": 
         {
-            "num_classes" : 3   
+            "num_classes" : 9   
         }, 
     "training_params": 
         {
-            "num_epochs" : 1,
+            "num_epochs" : 100,
             "stats_path" : "Model_Code/Object_Detection/training_stats"
         }
 }

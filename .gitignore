@@ -9,5 +9,8 @@ Server_Code/model_server/model_server/__pycache__/
 Monitor_Code/sdkconfig
 Monitor_Code/.vscode/
 train_stats00.csv
-
-
+Server_Code/Tests/assets/
+Server_Code/model_server/media/images/*
+!Server_Code/model_server/media/images/produce_bowl.jpg
+sick.png
+sick2.png

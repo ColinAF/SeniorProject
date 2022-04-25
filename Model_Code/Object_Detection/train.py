@@ -1,17 +1,15 @@
 ### NOTES ###
-# - Files for {train,test/validate,model,visualizations}
+# This needs a refactor! 
 # - Super helpful tutorial: https://medium.com/fullstackai/how-to-train-an-object-detector-with-your-own-coco-dataset-in-pytorch-319e7090da5
-# - Visualizations for trained model!! 
-# - Add test code
-# - More Data Augmentation!!!
 # - Create a training timer object? 
 ### NOTES ###
 
 ### Training Script ###
 
 ### External Imports ###
+import albumentations as A # For data augmentations that include bounding boxes
+from albumentations.pytorch import ToTensorV2
 import json
-from matplotlib import transforms 
 import torch # Get more specific things
 import time  
 from torch.utils.data import DataLoader
@@ -26,10 +24,7 @@ from visualization import visualize_predictions
 ### Local Imports ### 
 
 ## Temp ##
-import math
-import sys
 import time
-
 import torch
 import torchvision.models.detection.mask_rcnn
 import utils
@@ -60,7 +55,7 @@ num_classes = params["model_params"]["num_classes"]
 
 # Training Params 
 num_epochs = params["training_params"]["num_epochs"]
-## JSON was probably overkill, make this more readable ##
+## JSON was probably overkill, how can I make this more readable ##
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 #device = torch.device('cpu')
@@ -76,21 +71,42 @@ def time_elapsed(t_finish, t_start):
 # A stack of transforms for data augmentation
 # Train should be a boolean
 def get_transform(train):
-    transforms = []
-    transforms.append(T.ToTensor())
     if train:
-        transforms.append(T.RandomHorizontalFlip(0.5))
-        transforms.append(T.RandomHorizontalFlip(0.5))
-        transforms.append(T.RandomRotation(90)) # Add more roattions
-        #GaussianBlur
-        #ColorJitter
+        train_transform = A.Compose(
+            [
+                A.ToFloat(),
+                A.PadIfNeeded(min_height=800, min_width=800, border_mode=0),
+                A.HorizontalFlip(p=0.5),
+                A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=0.5),
+                A.VerticalFlip(p=0.5),
+                A.RandomRotate90(),
+                #A.ColorJitter(p=0.2),
+                ToTensorV2(),
+            ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']) # pascal_voc is the same as the pytorch convention
+        )
 
-    return T.Compose(transforms)
+
+    return train_transform
 
 def main():
-    train_dataset = ProduceDataset(root=root_path, 
+
+    kiwi_banana = ProduceDataset(root="assets/datasets/banana_kiwi/images/", 
+                                   annotations="assets/datasets/banana_kiwi/banana_kiwi.json",
+                                   transforms=get_transform(train=True))
+
+    new_dataset = ProduceDataset(root=root_path, 
                                    annotations=annotations_path,
-                                   transforms=get_transform(train=False))
+                                   transforms=get_transform(train=True))
+    
+    full_dataset = torch.utils.data.ConcatDataset([kiwi_banana, new_dataset])
+
+    train_size = int(0.5 * len(full_dataset))
+    test_size = len(full_dataset) - train_size
+
+    val_size = int(0.2 * test_size)
+    test_size -= int(0.2 * test_size)
+
+    train_dataset, test_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, test_size, val_size], generator=torch.Generator().manual_seed(42))
 
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size=train_batch_size, 
@@ -98,8 +114,8 @@ def main():
                                   num_workers=num_workers,
                                   collate_fn=collate_fn)
 
-    # Just using the same dataset to make sure coco validate works 
-    test_dataloader = DataLoader(train_dataset, 
+
+    test_dataloader = DataLoader(test_dataset, 
                                   batch_size=train_batch_size, 
                                   shuffle=shuffle, 
                                   num_workers=num_workers,
@@ -110,26 +126,29 @@ def main():
     model = get_model(num_classes)
     model.to(device)
 
-    #visualize_predictions(test_dataloader)
+    visualize_predictions(train_dataloader)
 
     # Make this only one epoch and bring main loop out here
-    train(model, train_dataloader, stats)
+    train(model, train_dataloader, test_dataloader, stats)
 
-    visualize_predictions(train_dataloader, model)
-    # test(model, test_dataloader, device) 
+    visualize_predictions(test_dataloader, model)
+    test(model, test_dataloader, "cpu") 
+
+    torch.save(model.state_dict(), "detector.pt")
 
 
 # Train the model
-def train(model, train_dataloader, stats):
+def train(model, train_dataloader, test_dataloader, stats):
         
     parameters = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(parameters, 
                                 lr=learning_rate, 
-                                momentum=momentum, 
-                                weight_decay=weight_decay)
+                                momentum=momentum
+                                #weight_decay=weight_decay
+                                )
 
     # Add lr scheduler to params.json 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
 
     len_dataloader = len(train_dataloader)
 
@@ -138,7 +157,6 @@ def train(model, train_dataloader, stats):
     t_last_epoch = t_start
 
     for epoch in range(num_epochs):
-        torch.cuda.empty_cache()
         model.train()
 
         i = 0 
@@ -161,6 +179,11 @@ def train(model, train_dataloader, stats):
         t_epoch = time.time()
         print("Epoch: " + str(epoch+1) + " Time in epoch: " + time_elapsed(t_epoch, t_last_epoch))       
         t_last_epoch = t_epoch
+
+        # Test and visualize every 10 epochs (Broken)
+        # if((epoch + 1) % 10 == 0):
+        #     test(model, test_dataloader, "cpu") 
+        #     visualize_predictions(test_dataloader, model)
 
     t_finish = time.time()
     print("Time training: " + time_elapsed(t_finish, t_start))
@@ -220,11 +243,6 @@ def test(model, data_loader, device):
     torch.set_num_threads(n_threads)
     return coco_evaluator 
 # Taken from: https://github.com/pytorch/vision/blob/main/references/detection/engine.py
-
-# Compare the trained model to validation dataset
-def validate():
-    pass
-## These should belong in their own modules ##
 
 main()
 

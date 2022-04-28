@@ -57,8 +57,8 @@ num_classes = params["model_params"]["num_classes"]
 num_epochs = params["training_params"]["num_epochs"]
 ## JSON was probably overkill, how can I make this more readable ##
 
-device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-#device = torch.device('cpu')
+#device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+device = torch.device('cpu')
 
 def collate_fn(batch):
     return tuple(zip(*batch))
@@ -128,17 +128,30 @@ def main():
 
     visualize_predictions(train_dataloader)
 
-    # Make this only one epoch and bring main loop out here
-    train(model, train_dataloader, test_dataloader, stats)
+    print("Starting Training!")
+    t_start = time.time()
+    t_last_epoch = t_start
 
-    visualize_predictions(test_dataloader, model)
-    test(model, test_dataloader, "cpu") 
+    for epoch in range(num_epochs):
 
-    torch.save(model.state_dict(), "detector.pt")
+        train(model, train_dataloader, stats, epoch, t_start)
+        test(model, test_dataloader, device) 
+        visualize_predictions(test_dataloader, model)
 
+        t_epoch = time.time()
+        print("Epoch: " + str(epoch+1) + " Time in epoch: " + time_elapsed(t_epoch, t_last_epoch))       
+        t_last_epoch = t_epoch
+
+
+
+    t_finish = time.time()
+    print("Time training: " + time_elapsed(t_finish, t_start))
+
+    # # Save model with params jason / guid / test results
+    # torch.save(model.state_dict(), "detector.pt")
 
 # Train the model
-def train(model, train_dataloader, test_dataloader, stats):
+def train(model, train_dataloader, stats, epoch, t_start):
         
     parameters = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(parameters, 
@@ -152,68 +165,35 @@ def train(model, train_dataloader, test_dataloader, stats):
 
     len_dataloader = len(train_dataloader)
 
-    print("Starting Training!")
-    t_start = time.time()
-    t_last_epoch = t_start
+    model.train()
 
-    for epoch in range(num_epochs):
-        model.train()
+    i = 0
+    for images, annotations in train_dataloader :
+        images = list(image.to(device) for image in images)
+        annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+        loss_dict = model(images, annotations)
+        losses = sum(loss for loss in loss_dict.values())
 
-        i = 0 
+        optimizer.zero_grad()
+        losses.backward()
+        optimizer.step()
+        scheduler.step()
+        i+=1
 
-        for images, annotations in train_dataloader :
-            images = list(image.to(device) for image in images)
-            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-            loss_dict = model(images, annotations)
-            losses = sum(loss for loss in loss_dict.values())
-
-            optimizer.zero_grad()
-            losses.backward()
-            optimizer.step()
-            scheduler.step()
-            i+=1
-
-            print(f'Epoch: {epoch+1} Iteration: {i}/{len_dataloader}, Loss: {losses}')
-            stats.log([(epoch+1), (time_elapsed(time.time(), t_start)), f'{losses}'])
+        print(f'Epoch: {epoch+1} Iteration: {i}/{len_dataloader}, Loss: {losses}')
+        stats.log([(epoch+1), (time_elapsed(time.time(), t_start)), f'{losses}'])
         
-        t_epoch = time.time()
-        print("Epoch: " + str(epoch+1) + " Time in epoch: " + time_elapsed(t_epoch, t_last_epoch))       
-        t_last_epoch = t_epoch
-
-        # Test and visualize every 10 epochs (Broken)
-        # if((epoch + 1) % 10 == 0):
-        #     test(model, test_dataloader, "cpu") 
-        #     visualize_predictions(test_dataloader, model)
-
-    t_finish = time.time()
-    print("Time training: " + time_elapsed(t_finish, t_start))
-
-## These should belong in their own modules ##
-# Compare the trained model to test dataset
-# Taken from: https://github.com/pytorch/vision/blob/main/references/detection/engine.py
-def _get_iou_types(model):
-    model_without_ddp = model
-    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
-        model_without_ddp = model.module
-    iou_types = ["bbox"]
-    if isinstance(model_without_ddp, torchvision.models.detection.MaskRCNN):
-        iou_types.append("segm")
-    if isinstance(model_without_ddp, torchvision.models.detection.KeypointRCNN):
-        iou_types.append("keypoints")
-    return iou_types
-
 def test(model, data_loader, device):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
-    torch.set_num_threads(1)
+    torch.set_num_threads(4)
     cpu_device = torch.device("cpu")
     model.eval()
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = "Test:"
 
     coco = get_coco_api_from_dataset(data_loader.dataset)
-    iou_types = _get_iou_types(model)
-    coco_evaluator = CocoEvaluator(coco, iou_types)
+    coco_evaluator = CocoEvaluator(coco, ["bbox"])
 
     for images, targets in metric_logger.log_every(data_loader, 100, header):
         images = list(img.to(device) for img in images)
@@ -242,7 +222,6 @@ def test(model, data_loader, device):
     coco_evaluator.summarize()
     torch.set_num_threads(n_threads)
     return coco_evaluator 
-# Taken from: https://github.com/pytorch/vision/blob/main/references/detection/engine.py
 
 main()
 

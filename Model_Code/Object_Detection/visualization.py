@@ -9,11 +9,11 @@ import matplotlib.pyplot as plt
 from torchvision.utils import draw_bounding_boxes
 ### External Imports ###
 
-# Evaluate an image! 
+
+# Display images and label.
 def visualize_predictions(dataloader, model=None):
-    # Display images and label.
     device = torch.device('cpu')
-    score_threshold = .10     
+    score_threshold = .70     
 
     inst_classes = [
         '_background_', 'apple', 'kiwi', 'lemon', 'banana', 'lime', 'tangerine', 'garlic', 'avocado'
@@ -51,16 +51,12 @@ def visualize_predictions(dataloader, model=None):
     imshow(torchvision.utils.make_grid(imgs[0:4]))
 
 
-def displayImage():
-    pass 
-
 def imshow(img):
     img = img      # unnormalize
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
-# Would be cool to have a function that plotted losses
 def plotLoses(stats_file):
     stats = open(stats_file, 'r')
     read_stats = csv.DictReader(stats)

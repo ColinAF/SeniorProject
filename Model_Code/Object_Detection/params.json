@@ -22,7 +22,7 @@
         }, 
     "training_params": 
         {
-            "num_epochs" : 100,
+            "num_epochs" : 10,
             "stats_path" : "Model_Code/Object_Detection/training_stats"
         }
 }

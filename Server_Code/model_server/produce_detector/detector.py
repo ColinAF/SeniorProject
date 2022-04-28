@@ -38,7 +38,7 @@ class ObjectDetector:
         self.model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 9) # don't hard code this! ;)
-        self.model.load_state_dict(torch.load('/home/colin/SeniorProject/detector.pt'))
+        self.model.load_state_dict(torch.load('C:/Users/Colin/Desktop/SeniorProject/detector.pt'))
         self.model.eval() 
         self.model.to(self.device)
         
@@ -57,7 +57,7 @@ class ObjectDetector:
         for i in range(len(outputs[0]['labels'])):
             lb[i] = inst_classes[outputs[0]['labels'][i]]
 
-        score_threshold = .20
+        score_threshold = .50
 
         im = draw_bounding_boxes(test_int, boxes=outputs[0]['boxes'][outputs[0]['scores'] > score_threshold], labels=lb, width=4) # windows doesn't like the color argument for some reason?
         im = torchvision.transforms.ToPILImage()(im)

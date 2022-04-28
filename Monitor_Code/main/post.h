@@ -18,6 +18,7 @@ extern SemaphoreHandle_t xFrameSemaphore;
 
 esp_err_t _http_event_handle(esp_http_client_event_t *evt);
 void http_post_task(void *pvParameters);
+void http_post_task_timer(void *pvParameters);
 
 #ifdef __cplusplus
 }
